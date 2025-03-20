@@ -45,3 +45,38 @@ double euclidean_dist(const vector<double>& x, const vector<double>& y) {
     }
     return sqrt(sum);
 }
+
+int main() {
+
+    cout << "Welcome to Annabelle Le's Feature Selection Algorithm." << endl;
+    cout << "Type in the name of the file to test: "; 
+    string filename;
+    cin >> filename;
+
+    vector<vector<double> > data = load_data(filename);
+    //if (data.empty()) {
+      //  cout << "Could not load data.";
+        //return 1;
+    //}
+
+   // cout << endl << "Starting Feature Search Demo..." << endl;
+   
+    cout << "Type the number of the algorithm you want to run:" << endl;
+    cout << "1) Forward Selection" << endl;
+    cout << "2> Backward Elimination" << endl;
+
+    int answer;
+    cin>> answer;
+
+    if (answer == 1) {
+        feature_search_demo(data);
+    }
+    else if (answer == 2) {
+        backward_elimination(data);
+    }
+    else {
+        cout << "Invalid choice. Input 1 or 2." << endl;
+    }
+    return 0;
+}
+
