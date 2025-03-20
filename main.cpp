@@ -63,7 +63,7 @@ int main() {
    
     cout << "Type the number of the algorithm you want to run:" << endl;
     cout << "1) Forward Selection" << endl;
-    cout << "2> Backward Elimination" << endl;
+    cout << "2) Backward Elimination" << endl;
 
     int answer;
     cin>> answer;
