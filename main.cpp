@@ -9,6 +9,7 @@
 using namespace std;
 
 //LOAD DATA FUNCTION
+//stringstream code found online
 vector<vector<double> > load_data(const string& filename) {
     ifstream file(filename);
     vector<vector<double>> data;
@@ -44,40 +45,6 @@ double euclidean_dist(const vector<double>& x, const vector<double>& y) {
         sum += pow(x[i] - y[i], 2);
     }
     return sqrt(sum);
-}
-
-int main() {
-
-    cout << "Welcome to Annabelle Le's Feature Selection Algorithm." << endl;
-    cout << "Type in the name of the file to test: "; 
-    string filename;
-    cin >> filename;
-
-    vector<vector<double> > data = load_data(filename);
-    //if (data.empty()) {
-      //  cout << "Could not load data.";
-        //return 1;
-    //}
-
-   // cout << endl << "Starting Feature Search Demo..." << endl;
-   
-    cout << "Type the number of the algorithm you want to run:" << endl;
-    cout << "1) Forward Selection" << endl;
-    cout << "2) Backward Elimination" << endl;
-
-    int answer;
-    cin>> answer;
-
-    if (answer == 1) {
-        feature_search_demo(data);
-    }
-    else if (answer == 2) {
-        backward_elimination(data);
-    }
-    else {
-        cout << "Invalid choice. Input 1 or 2." << endl;
-    }
-    return 0;
 }
 
 //LEAVING ONE OUT CV FUNC
@@ -224,4 +191,114 @@ double cs170_demo(const vector<vector<double> >& data){
 }
 
 
+//so now for backward elimination
+//starts off w full dataset & then removes features one by one
 
+void backward_elimination(vector<vector<double>>& data) {
+    vector<int> current_features; //for backward has all data currently
+    vector<int> best_feature_set; 
+    int num_features = data[0].size() - 1;
+
+    for (int i = 1; i <= num_features; i++) {
+        current_features.push_back(i);
+    }
+
+    cout << "Beginning search\n" << endl;
+
+    //have to have initial accuracy before removing any features
+    double best_accuracy_so_far = leave_one_out_cross_validation(data, current_features, -1);
+    best_feature_set = current_features;
+
+    cout << "Initial Set {";
+
+    for (size_t j = 0; j < current_features.size(); j++) {
+        cout << current_features[j];
+        if (j <current_features.size() - 1) cout << ",";
+    }
+    cout << "} - Accuracy: " << best_accuracy_so_far * 100 << "%" << endl;
+
+    for (int i = num_features; i >= 1; i--) {
+        int worst_feature = -1;
+        double best_accuracy = 0.0; //stores best accuracy after removing the feature
+
+        //iterate through to remove one feature at a time
+        for (size_t j = 0; j < current_features.size(); j++) {
+            vector<int> temp_features = current_features; //where current features is temp feature
+            temp_features.erase(temp_features.begin() + j);  //test to see what sccuracy would be like after removing a feature in temp features
+
+            double accuracy = leave_one_out_cross_validation(data, temp_features, -1);
+
+            cout << "Removing feature(s) {";
+            for (int feat : temp_features) cout << feat << " ";
+            cout << "} - Accuracy: " << accuracy * 100 << "%" << endl;
+            
+            //after removal it improves accuracy, mark it as a worst feature
+             if (accuracy > best_accuracy) {
+                best_accuracy = accuracy;
+                worst_feature = current_features[j];  
+            }
+        }
+
+        if (worst_feature == -1) {
+            cout << "No improvement found. Stopping elimination.\n" << endl;
+            break;
+        }
+
+        //remove it 
+        current_features.erase(remove(current_features.begin(), current_features.end(), worst_feature), current_features.end());
+
+        //continue to update accuracy
+        if (best_accuracy > best_accuracy_so_far) {
+            best_accuracy_so_far = best_accuracy;
+            best_feature_set = current_features;
+        }
+        
+        cout << "\nBest feature set so far: {";
+        for (size_t j = 0; j < current_features.size(); j++) {
+            cout << current_features[j]; 
+            if (j < current_features.size() - 1) cout << ",";
+        }
+        cout << "} - Accuracy: " << best_accuracy * 100 << "%" << endl;
+    }
+
+    cout << "\nFinal best feature set: {";
+    for (size_t j = 0; j < best_feature_set.size(); j++) {
+        cout << best_feature_set[j];
+        if (j < best_feature_set.size() - 1) cout << ",";
+    }
+    cout << "} - Accuracy: " << best_accuracy_so_far * 100 << "%" << endl;
+}
+
+int main() {
+
+    cout << "Welcome to Annabelle Le's Feature Selection Algorithm." << endl;
+    cout << "Type in the name of the file to test: "; 
+    string filename;
+    cin >> filename;
+
+    vector<vector<double> > data = load_data(filename);
+    //if (data.empty()) {
+      //  cout << "Could not load data.";
+        //return 1;
+    //}
+
+   // cout << endl << "Starting Feature Search Demo..." << endl;
+   
+    cout << "Type the number of the algorithm you want to run:" << endl;
+    cout << "1) Forward Selection" << endl;
+    cout << "2) Backward Elimination" << endl;
+
+    int answer;
+    cin>> answer;
+
+    if (answer == 1) {
+        forward_selection(data);
+    }
+    else if (answer == 2) {
+        backward_elimination(data);
+    }
+    else {
+        cout << "Invalid choice. Input 1 or 2." << endl;
+    }
+    return 0;
+}
